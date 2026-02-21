@@ -1,0 +1,182 @@
+# 📊 How to Create Splunk Dashboard and Alerts
+
+---
+
+# 🚀 Create Dashboard (Step-by-Step)
+
+## Step 1 – Open Splunk Web
+Go to:
+
+http://<Splunk-Server-IP>:8000
+
+Login with admin credentials.
+
+---
+
+## Step 2 – Create New Dashboard
+
+1. Click **Dashboards**
+2. Click **Create New Dashboard**
+3. Select **Classic Dashboard**
+4. Enter:
+
+Title: Server Monitoring Pro  
+Dashboard ID: server_monitoring  
+
+Click **Create Dashboard**
+
+---
+
+## Step 3 – Add CPU Usage Panel
+
+Click **Add Panel → New Panel**
+
+Use this query:
+
+```spl
+source="/var/log/simple_metrics.log"
+| rex "%Cpu\(s\):.*?(?<idle>[0-9.]+)\s+id"
+| eval cpu_usage=round(100-idle,2)
+| stats avg(cpu_usage) as CPU_Usage
+```
+
+Visualization:
+- Select **Single Value**
+- Unit: %
+- Color Mode: Block
+- Range Values: 80
+- Range Colors: Green, Red
+
+Save as: **CPU Usage (%)**
+
+---
+
+## Step 4 – Add CPU Trend Panel
+
+Click **Add Panel → New Panel**
+
+Query:
+
+```spl
+source="/var/log/simple_metrics.log"
+| rex "%Cpu\(s\):.*?(?<idle>[0-9.]+)\s+id"
+| eval cpu_usage=round(100-idle,2)
+| timechart avg(cpu_usage) as CPU_Usage
+```
+
+Visualization:
+- Line Chart
+
+Save as: **CPU Usage Trend**
+
+---
+
+## Step 5 – Add Memory Usage Panel
+
+Query:
+
+```spl
+source="/var/log/simple_metrics.log"
+| rex "MiB Mem\s*:\s*(?<total>[0-9.]+)\s+total.*?(?<used>[0-9.]+)\s+used"
+| eval mem_percent=round((used/total)*100,2)
+| stats avg(mem_percent) as Memory_Usage
+```
+
+Visualization:
+- Single Value
+- Unit: %
+- Range Values: 80
+- Range Colors: Green, Red
+
+Save as: **Memory Usage (%)**
+
+---
+
+## Step 6 – Add Memory Trend Panel
+
+```spl
+source="/var/log/simple_metrics.log"
+| rex "MiB Mem\s*:\s*(?<total>[0-9.]+)\s+total.*?(?<used>[0-9.]+)\s+used"
+| eval mem_percent=round((used/total)*100,2)
+| timechart avg(mem_percent) as Memory_Usage
+```
+
+Visualization:
+- Area Chart
+
+---
+
+# 🚨 Create CPU Alert (>80%)
+
+## Step 1 – Create Alert
+
+Go to **Search & Reporting**
+
+Enter:
+
+```spl
+source="/var/log/simple_metrics.log"
+| rex "%Cpu\(s\):.*?(?<idle>[0-9.]+)\s+id"
+| eval cpu_usage=100-idle
+| where cpu_usage > 80
+```
+
+Click **Save As → Alert**
+
+---
+
+## Step 2 – Configure Alert
+
+| Setting | Value |
+|----------|--------|
+| Alert Type | Scheduled |
+| Run Every | 5 minutes |
+| Time Range | Last 5 minutes |
+| Trigger | Number of results > 0 |
+| Trigger Once | Yes |
+| Throttle | 10 minutes |
+
+Click **Save**
+
+---
+
+# 🚨 Create Memory Alert (>80%)
+
+```spl
+source="/var/log/simple_metrics.log"
+| rex "MiB Mem\s*:\s*(?<total>[0-9.]+)\s+total.*?(?<used>[0-9.]+)\s+used"
+| eval mem_percent=(used/total)*100
+| where mem_percent > 80
+```
+
+Use same alert configuration as CPU alert.
+
+---
+
+# 🔥 How to Test Alert
+
+Install stress tool:
+
+```bash
+sudo yum install stress -y
+```
+
+Simulate CPU spike:
+
+```bash
+stress --cpu 4 --timeout 180
+```
+
+Check triggered alerts:
+
+Splunk → Activity → Triggered Alerts
+
+---
+
+# 🎯 Outcome
+
+- Real-time CPU monitoring
+- Memory utilization tracking
+- Threshold-based alerting
+- Production-style dashboard
+- Enterprise-ready monitoring setup
