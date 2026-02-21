@@ -1,0 +1,109 @@
+<dashboard refresh="30">
+  <label>Server Monitoring Pro</label>
+
+  <!-- SERVER STATUS -->
+  <row>
+    <panel>
+      <title>Server Health Status</title>
+      <single>
+        <search>
+          <query><![CDATA[
+source="/var/log/simple_metrics.log"
+| rex "%Cpu\(s\):\s+[0-9.]+\s+us,\s+[0-9.]+\s+sy,\s+[0-9.]+\s+ni,\s+(?<idle>[0-9.]+)\s+id"
+| rex "MiB Mem\s*:\s*(?<total>[0-9.]+)\s+total.*?(?<used>[0-9.]+)\s+used"
+| eval cpu_usage=round(100-idle,2)
+| eval mem_percent=round((used/total)*100,2)
+| eval health=if(cpu_usage>80 OR mem_percent>80,1,0)
+| stats max(health) as health
+          ]]></query>
+          <earliest>-30m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">1</option>
+        <option name="rangeColors">["green","red"]</option>
+      </single>
+    </panel>
+  </row>
+
+  <!-- CPU + MEMORY -->
+  <row>
+    <panel>
+      <title>CPU Usage (%)</title>
+      <single>
+        <search>
+          <query><![CDATA[
+source="/var/log/simple_metrics.log"
+| rex "%Cpu\(s\):.*?(?<idle>[0-9.]+)\s+id"
+| eval cpu_usage=round(100-idle,2)
+| stats avg(cpu_usage) as CPU_Usage
+          ]]></query>
+          <earliest>-30m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="unit">%</option>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">80</option>
+        <option name="rangeColors">["green","red"]</option>
+      </single>
+    </panel>
+
+    <panel>
+      <title>Memory Usage (%)</title>
+      <single>
+        <search>
+          <query><![CDATA[
+source="/var/log/simple_metrics.log"
+| rex "MiB Mem\s*:\s*(?<total>[0-9.]+)\s+total.*?(?<used>[0-9.]+)\s+used"
+| eval mem_percent=round((used/total)*100,2)
+| stats avg(mem_percent) as Memory_Usage
+          ]]></query>
+          <earliest>-30m</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="unit">%</option>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">80</option>
+        <option name="rangeColors">["green","red"]</option>
+      </single>
+    </panel>
+  </row>
+
+  <!-- TRENDS -->
+  <row>
+    <panel>
+      <title>CPU Usage Trend</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+source="/var/log/simple_metrics.log"
+| rex "%Cpu\(s\):.*?(?<idle>[0-9.]+)\s+id"
+| eval cpu_usage=round(100-idle,2)
+| timechart avg(cpu_usage) as CPU_Usage
+          ]]></query>
+          <earliest>-1h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">line</option>
+      </chart>
+    </panel>
+
+    <panel>
+      <title>Memory Usage Trend</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+source="/var/log/simple_metrics.log"
+| rex "MiB Mem\s*:\s*(?<total>[0-9.]+)\s+total.*?(?<used>[0-9.]+)\s+used"
+| eval mem_percent=round((used/total)*100,2)
+| timechart avg(mem_percent) as Memory_Usage
+          ]]></query>
+          <earliest>-1h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="charting.chart">area</option>
+      </chart>
+    </panel>
+  </row>
+
+</dashboard>
