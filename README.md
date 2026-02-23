@@ -19,6 +19,9 @@ This project demonstrates a complete enterprise-style monitoring setup using:
 
 ![Splunk Dashboard Last 15 Minutes](https://github.com/aniljadhavmca/Splunk-Server-Monitoring/raw/main/images/dashboard-last-15m.png)
 
+![Splunk timechart Last 15 Minutes](https://github.com/aniljadhavmca/Splunk-Server-Monitoring/blob/main/images/Dashboard-before-stress.png)
+
+
 *Dashboard showing CPU and Memory usage for the last 15 minutes*
 
 # 🏗 Architecture
