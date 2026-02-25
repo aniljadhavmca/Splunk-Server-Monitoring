@@ -1,0 +1,126 @@
+<dashboard version="1.1" refresh="30" theme="dark">
+  <label>Server Monitoring Pro</label>
+
+  <!-- TIME PICKER -->
+  <fieldset submitButton="false">
+    <input type="time" token="time_range">
+      <label>Select Time Range</label>
+      <default>
+        <earliest>-15m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+
+  <!-- SERVER HEALTH -->
+  <row>
+    <panel>
+      <title>Server Health Status</title>
+      <single>
+        <search>
+          <query><![CDATA[
+index=main sourcetype=simple_metrics
+| rex "%Cpu\(s\):.*?(?<idle>\d+\.\d+)\s+id"
+| rex "MiB Mem\s*:\s*(?<total>\d+\.\d+)\s+total.*?(?<used>\d+\.\d+)\s+used"
+| eval cpu_usage=round(100-tonumber(idle),2)
+| eval mem_percent=round((tonumber(used)/tonumber(total))*100,2)
+| eval health=if(cpu_usage>80 OR mem_percent>80,1,0)
+| stats max(health) as health
+          ]]></query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">1</option>
+        <option name="rangeColors">["green","red"]</option>
+      </single>
+    </panel>
+  </row>
+
+  <!-- CPU + MEMORY SINGLE -->
+  <row>
+    <panel>
+      <title>CPU Usage (%)</title>
+      <single>
+        <search>
+          <query><![CDATA[
+index=main sourcetype=simple_metrics
+| rex "%Cpu\(s\):.*?(?<idle>\d+\.\d+)\s+id"
+| eval cpu_usage=round(100-tonumber(idle),2)
+| stats avg(cpu_usage) as CPU_Usage
+          ]]></query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="unit">%</option>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">70,85</option>
+        <option name="rangeColors">["green","orange","red"]</option>
+      </single>
+    </panel>
+
+    <panel>
+      <title>Memory Usage (%)</title>
+      <single>
+        <search>
+          <query><![CDATA[
+index=main sourcetype=simple_metrics
+| rex "MiB Mem\s*:\s*(?<total>\d+\.\d+)\s+total.*?(?<used>\d+\.\d+)\s+used"
+| eval mem_percent=round((tonumber(used)/tonumber(total))*100,2)
+| stats avg(mem_percent) as Memory_Usage
+          ]]></query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="unit">%</option>
+        <option name="colorMode">block</option>
+        <option name="rangeValues">70,85</option>
+        <option name="rangeColors">["green","orange","red"]</option>
+      </single>
+    </panel>
+  </row>
+
+  <!-- TRENDS -->
+  <row>
+    <panel>
+      <title>CPU Usage Trend</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=main sourcetype=simple_metrics
+| rex "%Cpu\(s\):.*?(?<idle>\d+\.\d+)\s+id"
+| eval cpu_usage=round(100-tonumber(idle),2)
+| timechart span=10s avg(cpu_usage) as CPU_Usage
+          ]]></query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.legend.placement">right</option>
+      </chart>
+    </panel>
+
+    <panel>
+      <title>Memory Usage Trend</title>
+      <chart>
+        <search>
+          <query><![CDATA[
+index=main sourcetype=simple_metrics
+| rex "MiB Mem\s*:\s*(?<total>\d+\.\d+)\s+total.*?(?<used>\d+\.\d+)\s+used"
+| eval mem_percent=round((tonumber(used)/tonumber(total))*100,2)
+| timechart span=10s avg(mem_percent) as Memory_Usage
+          ]]></query>
+          <earliest>$time_range.earliest$</earliest>
+          <latest>$time_range.latest$</latest>
+        </search>
+        <option name="charting.chart">area</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.legend.placement">right</option>
+      </chart>
+    </panel>
+  </row>
+
+</dashboard>
