@@ -242,6 +242,20 @@ sudo yum install stress -y
 stress --cpu 4 --timeout 180
 ```
 
+# Method 2 — 100% CPU Using yes Command (No install required)
+```bash
+yes > /dev/null &
+yes > /dev/null &
+yes > /dev/null &
+yes > /dev/null &
+```
+
+Stop using this.
+
+```bash
+pkill yes
+```
+
 ---
 
 # 🧠 Concepts Demonstrated
