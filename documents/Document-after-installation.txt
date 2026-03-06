@@ -67,11 +67,12 @@ sudo /opt/splunk/bin/splunk restart
 ✅ STEP 7 — Start Continuous Logging With Timestamp
 RUN on EC2
 
-while true; do
-  echo "$(date '+%Y-%m-%d %H:%M:%S') $(top -b -n1 | grep 'Cpu(s)')" >> /var/log/simple_metrics.log
-  echo "$(date '+%Y-%m-%d %H:%M:%S') $(top -b -n1 | grep 'MiB Mem')" >> /var/log/simple_metrics.log
+nohup sh -c 'while true; do
+  echo "$(date "+%Y-%m-%d %H:%M:%S") $(top -b -n1 | grep "Cpu(s)")" >> /var/log/simple_metrics.log
+  echo "$(date "+%Y-%m-%d %H:%M:%S") $(top -b -n1 | grep "MiB Mem")" >> /var/log/simple_metrics.log
   sleep 5
-done
+done' &
+
 
 Leave running.
 
