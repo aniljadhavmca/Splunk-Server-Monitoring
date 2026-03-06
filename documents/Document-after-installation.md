@@ -145,6 +145,8 @@ index=main sourcetype=simple_metrics
 **🧩 PHASE 6 — STRESS TEST**
 ---
 
+(you can run stress after creating dashboards)
+
 **✅ STEP 11 — Install Stress**
 ```bash
 sudo yum install stress -y
@@ -165,6 +167,9 @@ You MUST see spike above 80–95%.
 
 🧩 PHASE 7 — CREATE DASHBOARD (CLASSIC)
 ---
+
+Creates clasic dashboard, using this XML and refresh dashboard immidetly.
+
 ```bash
 <dashboard version="1.1" refresh="30" theme="dark">
   <label>Server Monitoring Pro</label>
